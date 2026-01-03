@@ -68,43 +68,122 @@
       <div class="q-container container q-mx-auto relative-position" style="position: relative; z-index: 10;">
         <h3 class="text-h3 text-weight-thin text-center q-mb-xl text-uppercase">Our Services</h3>
         
-        <div class="row q-col-gutter-xl justify-center">
-          <div v-for="(service, index) in services" :key="index" class="col-12 col-md-4">
+        <div class="services-showcase row no-wrap q-col-gutter-lg">
+          <div 
+            v-for="(service, index) in services" 
+            :key="index" 
+            class="service-col-wrapper transition-all"
+            :class="{ 
+              'is-expanded': expandedServiceId === service.id,
+              'is-shrunk': expandedServiceId && expandedServiceId !== service.id
+            }"
+          >
             <!-- Glass Card: Natural Height Flow -->
-            <q-card class="glass-card no-shadow">
+            <q-card class="glass-card no-shadow full-height relative-position overflow-hidden">
               
-              <!-- Image Container -->
-              <div class="q-pa-md">
-                 <div class="overflow-hidden relative-position border-radius-sm img-container">
-                  <q-img 
-                    :src="service.image" 
-                    :ratio="1"
-                    class="service-img"
-                  />
-                  <!-- Hover Overlay -->
-                  <div class="absolute-full hover-overlay transition-opacity"></div>
-                </div>
-              </div>
+              <!-- Service Background Image (Visible when expanded/shrunk) -->
+              <div class="absolute-full service-bg-overlay opacity-20" :style="{ backgroundImage: `url(${service.image})` }"></div>
 
-              <!-- Content Section -->
-              <q-card-section class="q-px-lg q-pb-lg q-pt-sm">
-                <h4 class="text-h5 text-weight-bold q-mb-sm text-uppercase service-title">{{ service.name }}</h4>
-                <p class="text-grey-4 text-body2 leading-relaxed">
-                  {{ service.description }}
-                </p>
-                
-                <div class="q-mt-md">
-                   <q-btn flat dense no-caps class="text-amber text-weight-bold text-caption letter-spacing-md" label="Learn More" icon-right="arrow_forward" />
+              <div class="column no-wrap full-height relative-position z-top">
+                <!-- Image Container (Always visible) -->
+                <div class="q-pa-md shrink-0">
+                   <div class="overflow-hidden relative-position border-radius-sm img-container">
+                    <q-img 
+                      :src="service.image" 
+                      :ratio="expandedServiceId === service.id ? 16/9 : 1"
+                      class="service-img"
+                    />
+                    <div class="absolute-full hover-overlay transition-opacity"></div>
+                  </div>
                 </div>
-              </q-card-section>
+
+                <!-- Content Section -->
+                <q-card-section class="q-px-lg q-pb-lg q-pt-sm grow">
+                  <div class="row items-center justify-between no-wrap">
+                    <h4 class="text-h5 text-weight-bold q-mb-xs text-uppercase service-title ellipsis">{{ service.name }}</h4>
+                    <q-btn 
+                      v-if="expandedServiceId === service.id" 
+                      flat round icon="close" 
+                      color="white" 
+                      @click.stop="expandedServiceId = null" 
+                      size="sm"
+                    />
+                  </div>
+
+                  <div class="service-description-container">
+                    <p class="text-grey-4 text-body2 leading-relaxed" :class="{ 'ellipsis-2-lines': !expandedServiceId || expandedServiceId !== service.id }">
+                      {{ service.description }}
+                    </p>
+                  </div>
+                  
+                  <!-- Expanded Details -->
+                  <div v-show="expandedServiceId === service.id" class="q-mt-md animate-fade-in">
+                    <div class="row q-col-gutter-lg q-pt-md">
+                      <div class="col-12 col-md-6">
+                        <div class="text-subtitle2 text-amber-6 text-uppercase q-mb-sm letter-spacing-md">Our Approach</div>
+                        <div class="text-grey-3 text-body2 leading-relaxed text-italic">
+                          {{ service.detailed_description || 'Our specialized approach ensures your moments are captured with absolute perfection and high-end artistic vision.' }}
+                        </div>
+                      </div>
+                      <div class="col-12 col-md-6">
+                        <div class="text-subtitle2 text-amber-6 text-uppercase q-mb-sm letter-spacing-md">Premium Features</div>
+                        <q-list dense dark class="text-grey-3 q-gutter-y-xs">
+                          <q-item v-for="(feat, fIdx) in (service.features || ['High-end quality', 'Custom artistic touch', 'Fast delivery'])" :key="fIdx" class="q-px-none min-height-0">
+                            <q-item-section avatar class="min-width-0 q-pr-sm">
+                              <q-icon name="stars" color="amber-6" size="xs" />
+                            </q-item-section>
+                            <q-item-section class="text-caption">{{ feat }}</q-item-section>
+                          </q-item>
+                        </q-list>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="q-mt-md" v-if="expandedServiceId !== service.id">
+                     <q-btn 
+                       flat dense no-caps 
+                       class="text-amber text-weight-bold text-caption letter-spacing-md" 
+                       label="Learn More" 
+                       icon-right="arrow_forward" 
+                       @click="expandedServiceId = service.id"
+                     />
+                  </div>
+                </q-card-section>
+              </div>
             </q-card>
           </div>
         </div>
       </div>
     </section>
 
+    <!-- Happy Moments Gallery Strip -->
+    <section class="q-py-xl bg-black overflow-hidden">
+      <div class="q-container container q-mx-auto">
+        <div class="row items-center q-mb-xl">
+          <div class="column">
+            <h3 class="text-h3 text-weight-thin q-ma-none text-uppercase">Happy <span class="text-weight-bold text-amber-6">Moments</span></h3>
+            <div class="text-subtitle1 text-grey-5 letter-spacing-md">Real stories from our frame gallery</div>
+          </div>
+          <q-space />
+          <div class="gt-xs text-grey-6 text-caption text-uppercase letter-spacing-lg">Delivering Joy Daily</div>
+        </div>
+
+        <div v-if="galleryPhotos.length" class="row q-col-gutter-lg">
+          <div v-for="photo in galleryPhotos.slice(0, 4)" :key="photo.id" class="col-12 col-sm-6 col-md-3">
+            <q-card class="glass-card hover-lift overflow-hidden no-shadow">
+              <q-img :src="photo.image_url" :ratio="1" class="transition-all hover-scale" />
+              <div class="absolute-bottom bg-gradient-dark q-pa-sm text-center">
+                <div class="text-caption text-white text-italic">{{ photo.caption }}</div>
+              </div>
+            </q-card>
+          </div>
+        </div>
+        <div v-else class="text-center q-pa-xl text-grey-7">Our gallery is coming soon...</div>
+      </div>
+    </section>
+
     <!-- Why Choose Us / Quality Strip -->
-    <section class="q-py-xl relative-position overflow-hidden q-mt-xl">
+    <section class="q-py-xl relative-position overflow-hidden">
       <!-- Background with subtle gradient -->
       <div class="absolute-full bg-gradient-dark"></div>
       
@@ -113,28 +192,124 @@
           
           <!-- Stat 1 -->
           <div class="col-12 col-sm-4 stat-item">
-            <q-icon name="collections" size="3.5em" color="amber" class="q-mb-md stat-icon" />
-            <div class="text-h2 text-weight-bolder logo-colored-text stat-number q-mb-sm">100+</div>
-            <div class="text-subtitle1 text-uppercase text-grey-4 letter-spacing-md text-weight-medium">Daily Projects</div>
+            <q-icon :name="businessStats.stat1.icon" size="3.5em" color="amber" class="q-mb-md stat-icon" />
+            <div class="text-h2 text-weight-bolder logo-colored-text stat-number q-mb-sm">{{ businessStats.stat1.value }}</div>
+            <div class="text-subtitle1 text-uppercase text-grey-4 letter-spacing-md text-weight-medium">{{ businessStats.stat1.label }}</div>
           </div>
 
           <!-- Stat 2 -->
           <div class="col-12 col-sm-4 stat-item border-x-glass">
-            <q-icon name="history_edu" size="3.5em" color="amber" class="q-mb-md stat-icon" />
-            <div class="text-h2 text-weight-bolder logo-colored-text stat-number q-mb-sm">10y</div>
-            <div class="text-subtitle1 text-uppercase text-grey-4 letter-spacing-md text-weight-medium">Experience</div>
+            <q-icon :name="businessStats.stat2.icon" size="3.5em" color="amber" class="q-mb-md stat-icon" />
+            <div class="text-h2 text-weight-bolder logo-colored-text stat-number q-mb-sm">{{ businessStats.stat2.value }}</div>
+            <div class="text-subtitle1 text-uppercase text-grey-4 letter-spacing-md text-weight-medium">{{ businessStats.stat2.label }}</div>
           </div>
 
           <!-- Stat 3 -->
           <div class="col-12 col-sm-4 stat-item">
-            <q-icon name="workspace_premium" size="3.5em" color="amber" class="q-mb-md stat-icon" />
-            <div class="text-h2 text-weight-bolder logo-colored-text stat-number q-mb-sm">100%</div>
-            <div class="text-subtitle1 text-uppercase text-grey-4 letter-spacing-md text-weight-medium">Satisfaction</div>
+            <q-icon :name="businessStats.stat3.icon" size="3.5em" color="amber" class="q-mb-md stat-icon" />
+            <div class="text-h2 text-weight-bolder logo-colored-text stat-number q-mb-sm">{{ businessStats.stat3.value }}</div>
+            <div class="text-subtitle1 text-uppercase text-grey-4 letter-spacing-md text-weight-medium">{{ businessStats.stat3.label }}</div>
           </div>
 
         </div>
       </div>
     </section>
+
+    <!-- Customer Testimonials Section -->
+    <section class="q-py-xl bg-black relative-position overflow-hidden">
+       <!-- Decorative background blur -->
+      <div class="absolute-left full-height width-1_2 bg-gradient-gold opacity-5 blur-150" style="transform: skewX(-20deg);"></div>
+
+      <div class="q-container container relative-position z-top">
+        <div class="text-center q-mb-xl">
+          <h2 class="text-h2 text-weight-thin q-ma-none text-uppercase">Client <span class="text-weight-bold text-amber-6">Stories</span></h2>
+          <p class="text-grey-5 text-h6 text-weight-light">What our amazing customers have to say about us</p>
+        </div>
+
+        <div class="row q-col-gutter-xl">
+          <div v-for="review in publicReviews" :key="review.id" class="col-12 col-md-4">
+            <q-card class="glass-card full-height q-pa-lg no-shadow">
+              <div class="row items-center q-mb-md">
+                <q-avatar size="40px" color="amber-9" text-color="black" class="text-weight-bold">
+                  {{ review.customer_name.charAt(0) }}
+                </q-avatar>
+                <div class="q-ml-md">
+                  <div class="text-subtitle1 text-weight-bold text-white">{{ review.customer_name }}</div>
+                  <q-rating
+                    v-model="review.rating"
+                    size="14px"
+                    color="amber-6"
+                    readonly
+                  />
+                </div>
+              </div>
+              <p class="text-grey-4 text-body1 text-italic">"{{ review.comment }}"</p>
+              <div class="text-caption text-grey-6 text-right">— {{ new Date(review.created_at).toLocaleDateString() }}</div>
+            </q-card>
+          </div>
+        </div>
+
+        <div class="text-center q-mt-xl">
+          <q-btn 
+            flat no-caps 
+            class="text-amber-6 text-weight-bold border-gold-btn q-px-xl" 
+            label="Share Your Experience" 
+            icon="rate_review"
+            @click="showReviewDialog = true"
+          />
+        </div>
+      </div>
+    </section>
+
+    <!-- Feedback Submission Dialog -->
+    <q-dialog v-model="showReviewDialog" persistent>
+      <q-card class="glass-dialog" style="min-width: 400px; border-radius: 20px;">
+        <q-card-section class="row items-center q-pb-none">
+          <div class="text-h6 text-white text-uppercase letter-spacing-md">Your Feedback</div>
+          <q-space />
+          <q-btn icon="close" flat round dense v-close-popup color="grey" />
+        </q-card-section>
+
+        <q-card-section class="q-gutter-y-md q-pt-lg">
+          <div class="text-center">
+            <div class="text-grey-5 q-mb-sm">Rate your experience</div>
+            <q-rating
+              v-model="newReview.rating"
+              size="2.5em"
+              color="amber-6"
+              icon="star_border"
+              icon-selected="star"
+              class="animate-pop"
+            />
+          </div>
+
+          <q-input 
+            v-model="newReview.customer_name" 
+            label="Your Name" 
+            outlined dark color="amber-6" 
+            class="input-glass" 
+          />
+          
+          <q-input 
+            v-model="newReview.comment" 
+            label="Your Message" 
+            type="textarea"
+            outlined dark color="amber-6" 
+            class="input-glass" 
+          />
+        </q-card-section>
+
+        <q-card-actions align="center" class="q-pb-xl q-px-lg">
+          <q-btn 
+            class="btn-premium-save full-width" 
+            label="Submit My Story" 
+            icon="send" 
+            @click="submitReview"
+            :loading="submittingReview"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
 
     <!-- Contact Section -->
     <section id="contact" class="q-py-xl bg-black relative-position overflow-hidden">
@@ -213,6 +388,8 @@
                   unelevated 
                   label="Send Message" 
                   class="full-width bg-amber-8 text-black text-weight-bold q-py-sm"
+                  @click="sendMessage"
+                  :loading="sending"
                 />
               </q-form>
             </q-card>
@@ -260,8 +437,9 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
+import { supabase } from 'boot/supabase'
 
 const $q = useQuasar()
 // Force Dark Mode
@@ -272,29 +450,92 @@ const cursorStyle = ref({
   top: '0px'
 })
 
+const services = ref([])
+const expandedServiceId = ref(null)
+const publicReviews = ref([])
+const galleryPhotos = ref([])
+const businessStats = ref({
+  stat1: { label: 'Daily Projects', value: '100+', icon: 'collections' },
+  stat2: { label: 'Experience', value: '10y', icon: 'history_edu' },
+  stat3: { label: 'Satisfaction', value: '100%', icon: 'workspace_premium' }
+})
 
+const showReviewDialog = ref(false)
+const submittingReview = ref(false)
+const newReview = ref({
+  customer_name: '',
+  rating: 5,
+  comment: ''
+})
 
-const services = [
-  {
-    name: 'Bespoke Framing',
-    description: 'Handcrafted frames designed to complement your art. Minimalist, vintage, or modern styles available.',
-    image: 'src/assets/framing.png'
-  },
-  {
-    name: 'Professional Laminating',
-    description: 'Protect your documents and photos with our premium matte and glossy finish lamination services.',
-    image: 'src/assets/laminating.png'
-  },
-  {
-    name: 'Creative Design',
-    description: 'Expert photo retouching, restoration, and graphic design tailored to your unique vision.',
-    image: 'src/assets/hero_studio.png'
+async function fetchStats() {
+  try {
+    const { data } = await supabase
+      .from('site_settings')
+      .select('value')
+      .eq('key', 'business_stats')
+      .maybeSingle()
+    
+    if (data && data.value) {
+      businessStats.value = data.value
+    }
+  } catch (err) {
+    console.error('Error fetching stats:', err)
   }
-]
+}
+
+async function fetchServices() {
+  const { data } = await supabase
+    .from('services')
+    .select('*')
+    .order('created_at', { ascending: true })
+  
+  if (data) {
+    services.value = data
+  }
+}
 
 const name = ref('')
 const email = ref('')
 const message = ref('')
+const sending = ref(false)
+
+async function sendMessage() {
+  if (!name.value || !message.value) {
+    $q.notify({ type: 'warning', message: 'Please fill in required fields' })
+    return
+  }
+
+  sending.value = true
+  try {
+    const { error } = await supabase
+      .from('contact_messages')
+      .insert([{
+        name: name.value,
+        email: email.value,
+        message: message.value,
+        subject: 'Website Inquiry'
+      }])
+
+    if (error) throw error
+
+    $q.notify({
+      type: 'positive',
+      message: 'Message sent successfully! We will get back to you soon.',
+      icon: 'done_all'
+    })
+
+    // Reset form
+    name.value = ''
+    email.value = ''
+    message.value = ''
+  } catch (err) {
+    console.error(err)
+    $q.notify({ type: 'negative', message: 'Failed to send message. Please try again.' })
+  } finally {
+    sending.value = false
+  }
+}
 
 function onMouseMove(e) {
   cursorStyle.value = {
@@ -309,6 +550,71 @@ function scrollToServices() {
     el.scrollIntoView({ behavior: 'smooth' })
   }
 }
+
+
+async function fetchPublicReviews() {
+  try {
+    const { data } = await supabase
+      .from('feedbacks')
+      .select('*')
+      .eq('status', 'approved')
+      .order('created_at', { ascending: false })
+      .limit(6)
+    if (data) publicReviews.value = data
+  } catch (err) {
+    console.error('Error fetching reviews:', err)
+  }
+}
+
+async function fetchGalleryPhotos() {
+  try {
+    const { data } = await supabase
+      .from('rating_photos')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(8)
+    if (data) galleryPhotos.value = data
+  } catch (err) {
+    console.error('Error fetching photos:', err)
+  }
+}
+
+async function submitReview() {
+  if (!newReview.value.customer_name || !newReview.value.comment) {
+    $q.notify({ type: 'warning', message: 'Please fill in your name and comment' })
+    return
+  }
+  
+  submittingReview.value = true
+  try {
+    const { error } = await supabase
+      .from('feedbacks')
+      .insert([newReview.value])
+    
+    if (error) throw error
+    
+    $q.notify({
+      type: 'positive',
+      message: 'Thank you for your feedback! It will appear live shortly.',
+      icon: 'stars'
+    })
+    
+    showReviewDialog.value = false
+    newReview.value = { customer_name: '', rating: 5, comment: '' }
+    fetchPublicReviews()
+  } catch {
+    $q.notify({ type: 'negative', message: 'Failed to submit feedback' })
+  } finally {
+    submittingReview.value = false
+  }
+}
+
+onMounted(() => {
+  fetchServices()
+  fetchStats()
+  fetchPublicReviews()
+  fetchGalleryPhotos()
+})
 </script>
 
 <style lang="scss" scoped>
@@ -613,5 +919,99 @@ function scrollToServices() {
   width: 50%;
 }
 
+/* Services Showcase Styling */
+.services-showcase {
+  display: flex !important;
+  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  min-height: 550px;
+  will-change: transform;
+}
 
+.service-col-wrapper {
+  flex: 1;
+  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  max-width: 100%;
+  will-change: flex, opacity, filter;
+  
+  &.is-expanded {
+    flex: 4;
+    z-index: 100;
+    @media (max-width: 1024px) {
+      flex: 100%;
+    }
+  }
+  
+  &.is-shrunk {
+    flex: 0.3;
+    opacity: 0.3;
+    filter: blur(4px) grayscale(1);
+    pointer-events: none;
+    
+    @media (max-width: 768px) {
+      display: none; 
+    }
+  }
+}
+
+.service-bg-overlay {
+  background-size: cover;
+  background-position: center;
+  filter: blur(40px);
+  pointer-events: none;
+  transform: scale(1.1);
+  transition: opacity 0.8s ease;
+}
+
+.animate-fade-in {
+  animation: premiumExpand 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes premiumExpand {
+  from { opacity: 0; transform: scale(0.95) translateY(20px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.min-height-0 {
+  min-height: 0;
+}
+.min-width-0 {
+  min-width: 0;
+}
+.shrink-0 {
+  flex-shrink: 0;
+}
+.grow {
+  flex-grow: 1;
+}
+
+.border-gold-btn {
+  border: 1px solid rgba(255, 193, 7, 0.4);
+  border-radius: 50px;
+  transition: all 0.3s ease;
+  &:hover {
+    background: rgba(255, 193, 7, 0.1);
+    border-color: #FFC107;
+    transform: scale(1.05);
+  }
+}
+
+.hover-lift {
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  &:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 40px rgba(255, 193, 7, 0.2) !important;
+  }
+}
+
+.hover-scale {
+  &:hover {
+    transform: scale(1.1);
+  }
+}
+
+.glass-dialog {
+  background: rgba(15, 15, 15, 0.8) !important;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
 </style>

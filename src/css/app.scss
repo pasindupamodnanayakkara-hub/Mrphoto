@@ -15,3 +15,120 @@ body {
 html, body {
   overflow-y: scroll; 
 }
+
+/* Premium Universal Save Button Style */
+.btn-premium-save {
+  background: linear-gradient(135deg, #FFC107 0%, #FF9800 100%) !important;
+  color: #000 !important;
+  font-weight: 800 !important;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  border-radius: 50px !important;
+  box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3) !important;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  padding: 8px 32px !important;
+
+  &:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(255, 152, 0, 0.5) !important;
+    background: linear-gradient(135deg, #ffd54f 0%, #ffc107 100%) !important;
+  }
+
+  &:active {
+    transform: translateY(0) scale(0.98);
+  }
+
+  .q-icon {
+    margin-right: 8px;
+    font-size: 1.2em;
+  }
+}
+
+/* Floating Save Action Bar for Admin Panels */
+.fixed-save-bar {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 2000;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(20px);
+  padding: 12px 24px;
+  border-radius: 50px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  animation: slideUp 0.5s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* --- Global UX Improvements --- */
+
+/* 1. Global Text Visibility Fixes */
+.admin-page {
+  color: #ffffff;
+  
+  .text-grey-5 {
+    color: #b0b0b0 !important; /* Brighter muted text for better legibility */
+  }
+  
+  .q-item-label--caption {
+    color: #a0a0a0 !important;
+  }
+}
+
+/* Fix for inputs often having hidden text */
+.q-field--dark .q-field__label, 
+.q-field--dark .q-field__native, 
+.q-field--dark .q-field__input {
+  color: #ffffff !important;
+}
+
+/* 2. Premium Luxury Checkbox Redesign */
+.q-checkbox {
+  .q-checkbox__bg {
+    border: 2px solid rgba(255, 193, 7, 0.4) !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-radius: 6px !important;
+    transition: all 0.3s ease !important;
+  }
+
+  /* Checked State */
+  &.q-checkbox--truthy {
+    .q-checkbox__bg {
+      background: linear-gradient(135deg, #FFC107 0%, #FF9800 100%) !important;
+      border-color: transparent !important;
+      box-shadow: 0 0 10px rgba(255, 193, 7, 0.4) !important;
+    }
+    
+    .q-checkbox__svg {
+      color: #000 !important; /* Black checkmark on gold */
+      padding: 2px;
+    }
+  }
+
+  &:hover .q-checkbox__bg {
+    border-color: #FFC107 !important;
+    transform: scale(1.05);
+  }
+}
+
+/* 3. Improved Navigation Highlighting */
+.active-link {
+  background: rgba(255, 193, 7, 0.15) !important;
+  color: #FFC107 !important;
+  border-right: 3px solid #FFC107;
+  
+  .q-icon {
+    color: #FFC107 !important;
+  }
+}
+
+/* 4. Global Glass Card Boost */
+.glass-table, .glass-card {
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}

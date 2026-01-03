@@ -47,6 +47,118 @@
             @click="btn.action ? btn.action() : null" 
             :to="btn.to"
           />
+
+          <!-- Cart Icon (Only Visible when Logged In) -->
+          <q-btn 
+            v-if="user"
+            flat 
+            :round="isScrolled"
+            :dense="isScrolled" 
+            icon="shopping_cart" 
+            :label="isScrolled ? '' : 'Cart'"
+            class="nav-link-btn q-mr-sm transition-all"
+            :class="{'icon-only-btn': isScrolled}"
+          >
+            <q-badge v-if="cartStore.totalCount > 0" color="red" floating borderless mini>
+              {{ cartStore.totalCount }}
+            </q-badge>
+            <q-menu class="glass-dialog no-shadow" anchor="bottom right" self="top right">
+              <q-list style="min-width: 300px" separator dark class="bg-black">
+                <q-item-label header class="text-white text-weight-bold row items-center">
+                  My Cart <q-space /> 
+                  <q-btn flat round dense icon="close" size="sm" v-close-popup />
+                </q-item-label>
+                
+                <q-item v-if="cartStore.items.length === 0" class="text-grey-5 q-pa-lg text-center">
+                  Your cart is empty
+                </q-item>
+
+                <q-item v-for="item in cartStore.items" :key="item.id" class="q-py-md">
+                  <q-item-section avatar>
+                    <q-img :src="item.image" style="width: 40px; height: 40px; border-radius: 4px;" />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label class="text-white text-weight-bold">{{ item.name }}</q-item-label>
+                    <q-item-label caption class="text-amber-5 text-weight-bold">
+                      {{ item.quantity }} x LKR {{ item.price }}
+                    </q-item-label>
+                  </q-item-section>
+                  <q-item-section side>
+                    <q-btn flat round dense size="sm" color="red-5" icon="remove_circle" @click="cartStore.removeFromCart(item.id)" />
+                  </q-item-section>
+                </q-item>
+
+                <q-separator dark />
+
+                <div v-if="cartStore.items.length > 0" class="q-pa-md">
+                  <div class="row items-center justify-between q-mb-md">
+                    <div class="text-subtitle1 text-white">Total:</div>
+                    <div class="text-subtitle1 text-amber-6 text-weight-bolder">LKR {{ cartStore.cartTotal }}</div>
+                  </div>
+                  <q-btn 
+                    unelevated 
+                    color="amber-6" 
+                    text-color="black" 
+                    label="Checkout Now" 
+                    class="full-width text-weight-bold" 
+                    rounded
+                    to="/checkout"
+                    v-close-popup
+                  />
+                </div>
+              </q-list>
+            </q-menu>
+          </q-btn>
+
+          <!-- Auth Button -->
+          <q-btn 
+            v-if="user && userRole !== 'customer'"
+            flat 
+            :round="isScrolled"
+            :dense="isScrolled"
+            no-caps 
+            icon="admin_panel_settings" 
+            :label="isScrolled ? '' : 'Dashboard'" 
+            class="nav-link-btn dashboard-btn transition-all" 
+            :class="{'icon-only-btn': isScrolled}"
+            to="/admin/system/manage"
+          />
+          <q-btn 
+            v-else-if="user && userRole === 'customer'"
+            flat 
+            :round="isScrolled"
+            :dense="isScrolled"
+            no-caps 
+            icon="account_circle" 
+            :label="isScrolled ? '' : 'Profile'" 
+            class="nav-link-btn profile-btn transition-all" 
+            :class="{'icon-only-btn': isScrolled}"
+            to="/profile"
+          />
+          <q-btn 
+            v-else-if="!user"
+            flat 
+            :round="isScrolled"
+            :dense="isScrolled"
+            no-caps 
+            icon="login" 
+            :label="isScrolled ? '' : 'Login'" 
+            class="nav-link-btn login-btn transition-all" 
+            :class="{'icon-only-btn': isScrolled}"
+            to="/admin/auth/login"
+          />
+          <q-btn 
+            v-else
+            flat 
+            :round="isScrolled"
+            :dense="isScrolled"
+            no-caps 
+            icon="logout" 
+            :label="isScrolled ? '' : 'Logout'" 
+            class="nav-link-btn logout-btn transition-all" 
+            :class="{'icon-only-btn': isScrolled}"
+            @click="handleLogout"
+          />
         </div>
 
         <!-- Mobile Menu -->
@@ -62,8 +174,17 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { useQuasar } from 'quasar'
+import { supabase } from 'boot/supabase'
+import { useCartStore } from 'stores/cart'
 
+const router = useRouter()
+const $q = useQuasar()
+const cartStore = useCartStore()
 const isScrolled = ref(false)
+const user = ref(null)
+const userRole = ref(null)
 
 const navButtons = [
   { label: 'Services', icon: 'design_services', action: () => scrollToId('services') },
@@ -86,11 +207,58 @@ function scrollToId(id) {
   const el = document.getElementById(id)
   if (el) {
     el.scrollIntoView({ behavior: 'smooth' })
+  } else {
+    // Navigate home first, then scroll
+    router.push('/').then(() => {
+      setTimeout(() => {
+        const target = document.getElementById(id)
+        if (target) target.scrollIntoView({ behavior: 'smooth' })
+      }, 500)
+    })
   }
 }
 
-onMounted(() => {
+async function handleLogout() {
+  await supabase.auth.signOut()
+  user.value = null
+  userRole.value = null
+  router.push('/')
+  $q.notify({
+    type: 'positive',
+    message: 'Logged out successful'
+  })
+}
+
+onMounted(async () => {
   window.addEventListener('scroll', onScroll)
+  
+  // Get initial session
+  const { data: { user: currentUser } } = await supabase.auth.getUser()
+  user.value = currentUser
+  
+  if (currentUser) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', currentUser.id)
+      .maybeSingle()
+    userRole.value = profile?.role
+  }
+
+  // Listen for auth changes
+  supabase.auth.onAuthStateChange(async (event, session) => {
+    user.value = session?.user || null
+    if (session?.user) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', session.user.id)
+        .maybeSingle()
+      userRole.value = profile?.role
+    } else {
+      userRole.value = null
+    }
+  })
 })
 
 onUnmounted(() => {
@@ -131,27 +299,26 @@ onUnmounted(() => {
   
   color: white;
 
-  /* Scrolled State: More Transparent & Glassy */
+  /* Scrolled State: More Opaque & Distinct for Visibility */
   &.glass-bar-scrolled {
-    background: rgba(0, 0, 0, 0.4); /* Much more transparent */
-    backdrop-filter: blur(30px) saturate(180%); /* Stronger blur */
-    border-color: rgba(255, 193, 7, 0.15); /* Subtler border */
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    background: rgba(10, 10, 10, 0.8) !important; /* Darker background to pop icons */
+    backdrop-filter: blur(40px) saturate(200%); /* Stronger blur */
+    border-color: rgba(255, 193, 7, 0.4); /* Sharper gold border */
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
   }
 
   /* Nav Buttons */
   .nav-link-btn {
-    color: #e0e0e0;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(255, 255, 255, 0.03);
+    color: #ffffff; // Pure white for max contrast
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.05);
     font-size: 1rem;
     font-weight: 500;
     letter-spacing: 0.5px;
     padding: 10px 24px;
     border-radius: 30px;
-    transition: all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); /* Ultra Smooth */
+    transition: all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
 
-    
     .q-icon {
       font-size: 1.2rem;
       margin-right: 8px;
@@ -165,29 +332,36 @@ onUnmounted(() => {
       box-shadow: 0 4px 12px rgba(255, 193, 7, 0.4);
     }
     
-    /* Icon-only mode styling - Larger & Smoother */
+    /* Icon-only mode styling - Scrolled state visibility */
     &.icon-only-btn {
       padding: 14px;
-      margin: 0 8px; /* Increased spacing */
-      border: 1px solid rgba(255, 255, 255, 0.3); /* Much clearer border */
+      margin: 0 6px;
+      border: 1.5px solid rgba(255, 255, 255, 0.4) !important; /* Stronger border */
       border-radius: 50%;
-      width: 54px; /* Slightly larger */
-      height: 54px;
+      width: 52px;
+      height: 52px;
       min-width: unset;
       min-height: unset;
-      background: rgba(255, 255, 255, 0.05); /* Slight fill to pop against dark header */
+      background: rgba(255, 255, 255, 0.1); /* Lighter background to make icon pop */
+      box-shadow: 0 0 15px rgba(0,0,0,0.4); // Subtle depth
       
       .q-icon {
         margin-right: 0;
-        font-size: 1.5rem; 
+        font-size: 1.4rem;
+        color: #ffffff; // Force white
+        filter: drop-shadow(0 0 5px rgba(0,0,0,1)); // Subtle glow for icon
       }
       
       &:hover {
          border-radius: 50%;
-         border-color: #FFC107; /* Gold border on hover */
+         border-color: #FFC107;
          transform: scale(1.15);
-         background: rgba(255, 193, 7, 0.9); 
+         background: #FFC107; 
          color: black;
+         .q-icon {
+           color: black;
+           filter: none;
+         }
       }
     }
   }
