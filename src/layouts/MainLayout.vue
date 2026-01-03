@@ -1,5 +1,6 @@
 <template>
-  <q-layout view="lHh Lpr lFf">
+  <q-layout view="lHh Lpr lFf" @mousemove="onMouseMove">
+    <div class="cursor-glow" :style="cursorStyle"></div>
     
     <!-- Content Fade Overlay -->
     <div class="fixed-top full-width top-fade-overlay" :style="{ opacity: isScrolled ? 1 : 0, transition: 'opacity 0.8s ease' }"></div>
@@ -189,7 +190,6 @@ const userRole = ref(null)
 const navButtons = [
   { label: 'Services', icon: 'design_services', action: () => scrollToId('services') },
   { label: 'Products', icon: 'inventory_2', to: '/products' },
-  { label: 'Gallery', icon: 'collections' }, 
   { label: 'Contact', icon: 'mail', action: () => scrollToId('contact') }
 ]
 
@@ -227,6 +227,18 @@ async function handleLogout() {
     type: 'positive',
     message: 'Logged out successful'
   })
+}
+
+const cursorStyle = ref({
+  left: '0px',
+  top: '0px'
+})
+
+function onMouseMove(e) {
+  cursorStyle.value = {
+    left: `${e.clientX}px`,
+    top: `${e.clientY}px`
+  }
 }
 
 onMounted(async () => {
@@ -400,5 +412,18 @@ onUnmounted(() => {
 
 .transition-all {
   transition: all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); /* Ultra Smooth Global */
+}
+.cursor-glow {
+  position: fixed;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, rgba(212, 175, 55, 0.02) 40%, transparent 80%);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 9999;
+  border-radius: 50%;
+  mix-blend-mode: screen;
+  filter: blur(80px);
+  transition: opacity 0.3s ease;
 }
 </style>
