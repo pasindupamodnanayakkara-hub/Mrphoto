@@ -1,0 +1,15 @@
+services:
+  - type: static
+    name: mr-photo
+    env: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist/spa
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_SUPABASE_URL
+        sync: false
+      - key: VITE_SUPABASE_ANON_KEY
+        sync: false
