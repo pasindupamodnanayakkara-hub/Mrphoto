@@ -36,54 +36,49 @@
 
            </q-input>
 
-           <div class="row q-col-gutter-sm">
-              <div class="col-12 col-sm-6">
-                 <q-input 
-                   v-model="password" 
-                   label="Password" 
-                   :type="isPwdVisible ? 'text' : 'password'" 
-                   dark 
-                   color="amber-6" 
-                   outlined 
-                   class="input-glass"
-                 >
-                   <template v-slot:prepend>
-                     <q-icon name="lock" color="grey-6" />
-                   </template>
-                   <template v-slot:append>
-                     <q-icon 
-                       :name="isPwdVisible ? 'visibility' : 'visibility_off'" 
-                       class="cursor-pointer" 
-                       color="grey-6" 
-                       @click="isPwdVisible = !isPwdVisible" 
-                     />
-                   </template>
-                 </q-input>
-              </div>
-              <div class="col-12 col-sm-6">
-                  <q-input 
-                   v-model="confirmPassword" 
-                   label="Confirm" 
-                   :type="isConfirmPwdVisible ? 'text' : 'password'" 
-                   dark 
-                   color="amber-6" 
-                   outlined 
-                   class="input-glass"
-                 >
-                    <template v-slot:prepend>
-                     <q-icon name="lock_outline" color="grey-6" />
-                   </template>
-                   <template v-slot:append>
-                     <q-icon 
-                       :name="isConfirmPwdVisible ? 'visibility' : 'visibility_off'" 
-                       class="cursor-pointer" 
-                       color="grey-6" 
-                       @click="isConfirmPwdVisible = !isConfirmPwdVisible" 
-                     />
-                   </template>
-                 </q-input>
-              </div>
-           </div>
+             <q-input 
+               v-model="password" 
+               label="Password" 
+               :type="isPwdVisible ? 'text' : 'password'" 
+               dark 
+               color="amber-6" 
+               outlined 
+               class="input-glass"
+             >
+               <template v-slot:prepend>
+                 <q-icon name="lock" color="grey-6" />
+               </template>
+               <template v-slot:append>
+                 <q-icon 
+                   :name="isPwdVisible ? 'visibility' : 'visibility_off'" 
+                   class="cursor-pointer" 
+                   color="grey-6" 
+                   @click="isPwdVisible = !isPwdVisible" 
+                 />
+               </template>
+             </q-input>
+
+             <q-input 
+               v-model="confirmPassword" 
+               label="Confirm Password" 
+               :type="isConfirmPwdVisible ? 'text' : 'password'" 
+               dark 
+               color="amber-6" 
+               outlined 
+               class="input-glass"
+             >
+                <template v-slot:prepend>
+                 <q-icon name="lock_outline" color="grey-6" />
+               </template>
+               <template v-slot:append>
+                 <q-icon 
+                   :name="isConfirmPwdVisible ? 'visibility' : 'visibility_off'" 
+                   class="cursor-pointer" 
+                   color="grey-6" 
+                   @click="isConfirmPwdVisible = !isConfirmPwdVisible" 
+                 />
+               </template>
+             </q-input>
 
            <div class="row justify-end q-px-sm q-mb-sm">
              <q-btn 
@@ -119,7 +114,7 @@
           
           <div class="q-mt-lg">
              <q-btn 
-              label="Sign Up" 
+              label="Register" 
               type="submit" 
               color="amber-8" 
               class="full-width q-py-sm text-weight-bold text-black shadow-10" 
@@ -132,7 +127,7 @@
       </q-card-section>
       
       <q-card-section class="text-center q-pt-md">
-        <div class="text-grey-6 text-caption">
+        <div class="text-grey-6 text-subtitle1">
           Already have an account? 
           <router-link to="/admin/auth/login" class="text-amber-5 text-weight-bold hover-underline" style="text-decoration: none;">Sign In</router-link>
         </div>

@@ -6,6 +6,12 @@
         <q-toolbar-title class="text-uppercase text-weight-bold" style="letter-spacing: 1px;">
           Mr. Photo Admin
         </q-toolbar-title>
+        
+        <!-- Live Action Bar Update Badge -->
+        <div class="q-ml-md q-px-sm q-py-xs rounded-borders row items-center no-wrap cursor-pointer hover-effect" style="border: 1px solid rgba(255, 193, 7, 0.4); background: rgba(255, 255, 255, 0.05);">
+          <q-icon name="history" color="amber-6" size="xs" class="q-mr-sm" />
+          <div class="text-amber-6 text-caption text-weight-bold" style="font-size: 0.75rem;">update 1.2.5</div>
+        </div>
         <q-space />
         <div class="q-gutter-sm">
            <q-btn flat round icon="notifications_none" />
@@ -19,6 +25,7 @@
       show-if-above 
       bordered 
       dark
+      :width="240"
       class="glass-drawer" 
     >
       <q-scroll-area class="fit">

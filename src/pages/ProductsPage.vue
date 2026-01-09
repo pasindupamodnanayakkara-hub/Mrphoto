@@ -3,10 +3,10 @@
     <div class="q-py-xl container q-mx-auto" style="padding-top: 120px;">
       <h3 class="text-h3 text-weight-thin text-center q-mb-xl text-uppercase">Exclusive Products</h3>
       
-      <!-- Grid Layout for Products Page -->
-      <div class="row q-col-gutter-xl justify-center">
-        <div v-for="(product, index) in products" :key="index" class="col-12 col-sm-6 col-md-4">
-          <q-card class="bg-grey-10 text-white product-card column no-wrap full-height">
+      <!-- Grid Layout for Products Page - Zoom Stable -->
+      <div class="product-grid row q-col-gutter-lg justify-center">
+        <div v-for="(product, index) in products" :key="index" class="col-12 col-sm-6 col-md-4 col-lg-3">
+          <q-card class="bg-grey-10 text-white product-card column no-wrap">
             <!-- Image Container -->
             <div class="relative-position overflow-hidden col-auto">
               <q-img :src="product.image" :ratio="1" class="product-img" />
@@ -103,6 +103,13 @@ onMounted(() => {
 .container {
   max-width: 1200px;
   margin: 0 auto;
+  padding-left: 20px;
+  padding-right: 20px;
+  
+  @media (min-width: 1024px) {
+    padding-left: 40px;
+    padding-right: 40px;
+  }
 }
 
 .product-card {

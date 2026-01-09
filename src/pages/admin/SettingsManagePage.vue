@@ -51,6 +51,26 @@
               outlined dark color="amber-6" 
               class="input-glass" 
             />
+            <div class="row q-col-gutter-sm">
+              <div class="col-12 col-sm-4">
+                <q-input 
+                  v-model="settings.general.since_year" 
+                  label="Since Year" 
+                  placeholder="SINCE 2014"
+                  outlined dark color="amber-6" 
+                  class="input-glass" 
+                />
+              </div>
+              <div class="col-12 col-sm-8">
+                <q-input 
+                  v-model="settings.general.footer_tagline" 
+                  label="Drawer Tagline" 
+                  placeholder="PREMIUM PHOTO EXPERIENCE"
+                  outlined dark color="amber-6" 
+                  class="input-glass" 
+                />
+              </div>
+            </div>
           </div>
         </q-card>
       </div>
@@ -127,7 +147,9 @@
               class="input-glass" 
               placeholder="https://facebook.com/your-page"
             >
-              <template v-slot:prepend><q-icon name="mdi-facebook" color="blue-6" /></template>
+              <template v-slot:append>
+                <q-btn flat round dense icon="mdi-facebook" color="blue-6" type="a" :href="settings.social.facebook" target="_blank" :disable="!settings.social.facebook" />
+              </template>
             </q-input>
             <q-input 
               v-model="settings.social.instagram" 
@@ -136,7 +158,9 @@
               class="input-glass"
               placeholder="https://instagram.com/your-profile"
             >
-              <template v-slot:prepend><q-icon name="mdi-instagram" color="pink-6" /></template>
+              <template v-slot:append>
+                <q-btn flat round dense icon="mdi-instagram" color="pink-6" type="a" :href="settings.social.instagram" target="_blank" :disable="!settings.social.instagram" />
+              </template>
             </q-input>
             <q-input 
               v-model="settings.social.whatsapp" 
@@ -145,7 +169,9 @@
               class="input-glass"
               placeholder="e.g. 94771234567"
             >
-              <template v-slot:prepend><q-icon name="mdi-whatsapp" color="green-5" /></template>
+              <template v-slot:append>
+                <q-btn flat round dense icon="mdi-whatsapp" color="green-5" type="a" :href="'https://wa.me/' + settings.social.whatsapp" target="_blank" :disable="!settings.social.whatsapp" />
+              </template>
             </q-input>
             <q-input 
               v-model="settings.social.tiktok" 
@@ -154,7 +180,25 @@
               class="input-glass"
               placeholder="https://tiktok.com/@your-profile"
             >
-               <template v-slot:prepend><q-icon name="mdi-music-note" color="white" /></template>
+               <template v-slot:append>
+                 <q-btn flat round dense icon="mdi-music-note" color="white" type="a" :href="settings.social.tiktok" target="_blank" :disable="!settings.social.tiktok" />
+               </template>
+            </q-input>
+            
+            <q-separator class="q-my-md bg-grey-8" />
+            
+            <div class="text-subtitle2 text-grey-4 q-mb-sm">Service Inquiry Contact</div>
+            <q-input 
+              v-model="settings.social.inquiry_number" 
+              label="Service Inquiry Direct Link" 
+              outlined dark color="green-5" 
+              class="input-glass"
+              placeholder="e.g. https://wa.me/94760000000"
+              hint="Enter a full link here. The 'More Information' button will open this link directly."
+            >
+               <template v-slot:append>
+                 <q-icon name="link" color="green-5" />
+               </template>
             </q-input>
           </div>
         </q-card>
@@ -235,7 +279,7 @@ const loading = ref(true)
 const saving = ref(false)
 
 const settings = ref({
-  general: { site_name: '', contact_email: '', phone: '' },
+  general: { site_name: '', contact_email: '', phone: '', since_year: 'SINCE 2014', footer_tagline: 'PREMIUM PHOTO EXPERIENCE' },
   delivery: { base_price: 0, notice: '' },
   appearance: { theme: 'dark', primary_color: '#FFC107' },
   maintenance: { enabled: false, message: '' },
@@ -244,7 +288,7 @@ const settings = ref({
     stat2: { label: 'Experience', value: '10y', icon: 'history_edu' },
     stat3: { label: 'Satisfaction', value: '100%', icon: 'workspace_premium' }
   },
-  social: { facebook: '', instagram: '', whatsapp: '', tiktok: '' }
+  social: { facebook: '', instagram: '', whatsapp: '', tiktok: '', inquiry_number: '' }
 })
 
 const settingsMap = {

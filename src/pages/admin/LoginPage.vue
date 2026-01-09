@@ -36,8 +36,8 @@
           </q-input>
           
           <div class="row items-center justify-between text-caption">
-             <q-checkbox v-model="rememberMe" label="Remember me" dark color="amber-6" size="sm" />
-             <a href="#" class="text-grey-5" style="text-decoration: none;">Forgot Password?</a>
+             <q-checkbox v-model="rememberMe" label="Remember me" dark color="amber-6" size="sm" class="text-white" />
+             <a href="#" class="text-grey-3 hover-text-amber" style="text-decoration: none;">Forgot Password?</a>
           </div>
 
           <q-btn 
@@ -54,9 +54,9 @@
       </q-card-section>
       
       <q-card-section class="text-center q-pt-md">
-        <div class="text-grey-6 text-caption">
+        <div class="text-grey-6 text-subtitle1">
           Don't have an account? 
-          <router-link to="/admin/auth/signup" class="text-amber-5 text-weight-bold hover-underline" style="text-decoration: none;">Sign Up</router-link>
+          <router-link to="/admin/auth/register" class="text-amber-5 text-weight-bold hover-underline" style="text-decoration: none;">Register</router-link>
         </div>
       </q-card-section>
     </q-card>
@@ -125,10 +125,21 @@ async function onSubmit() {
 
   } catch (error) {
     console.error('Detailed login error:', error)
-    $q.notify({
-      type: 'negative',
-      message: error.message || 'Failed to sign in. Please check your credentials.'
-    })
+    
+    // Check for invalid credentials (which could mean not registered)
+    if (error.message && error.message.includes('Invalid login credentials')) {
+      $q.notify({
+        type: 'negative',
+        message: 'Invalid email or password. Please check your credentials.',
+        timeout: 2000
+      })
+      // No redirect - let user try again
+    } else {
+      $q.notify({
+        type: 'negative',
+        message: error.message || 'Failed to sign in. Please check your credentials.'
+      })
+    }
   } finally {
     loading.value = false
     console.log('Login process finished.')
