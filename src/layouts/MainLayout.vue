@@ -49,8 +49,7 @@
             :label="isScrolled ? '' : btn.label" 
             class="nav-link-btn transition-all" 
             :class="{'icon-only-btn': isScrolled}"
-            @click="btn.action ? btn.action() : null" 
-            :to="btn.to"
+            @click="handleNav(btn)" 
           />
 
           <!-- Cart Icon (Only Visible when Logged In) -->
@@ -126,7 +125,7 @@
             :label="isScrolled ? '' : 'Dashboard'" 
             class="nav-link-btn dashboard-btn transition-all" 
             :class="{'icon-only-btn': isScrolled}"
-            to="/admin/system/manage"
+            @click="router.push('/admin/system/manage')"
           />
           <q-btn 
             v-else-if="user && userRole === 'customer'"
@@ -138,7 +137,7 @@
             :label="isScrolled ? '' : 'Profile'" 
             class="nav-link-btn profile-btn transition-all" 
             :class="{'icon-only-btn': isScrolled}"
-            to="/profile"
+            @click="router.push('/profile')"
           />
           <q-btn 
             v-else-if="!user"
@@ -150,7 +149,7 @@
             :label="isScrolled ? '' : 'Login'" 
             class="nav-link-btn login-btn transition-all" 
             :class="{'icon-only-btn': isScrolled}"
-            to="/admin/auth/login"
+            @click="router.push('/admin/auth/login')"
           />
           <q-btn 
             v-else
@@ -190,6 +189,7 @@
       dark
       :breakpoint="1024"
       elevated
+      :no-swipe-open="$q.screen.gt.sm"
     >
       <div class="column full-height mobile-drawer-content q-pa-lg">
         <!-- Close Button -->
@@ -275,7 +275,9 @@ const user = ref(null)
 const userRole = ref(null)
 const siteInfo = ref({
   since_year: 'SINCE 2014',
-  footer_tagline: 'PREMIUM PHOTO EXPERIENCE'
+  footer_tagline: 'PREMIUM PHOTO EXPERIENCE',
+  footer_copyright: 'Mr. Photo Studio',
+  footer_developer: 'Suraj Dev'
 })
 
 const navButtons = [
@@ -293,6 +295,14 @@ const headerStyle = computed(() => {
     ? { width: 'auto', minWidth: '400px', borderRadius: '50px' } 
     : { width: '98%', borderRadius: '60px' }
 })
+
+function handleNav(btn) {
+  if (btn.action) {
+    btn.action()
+  } else if (btn.to) {
+    router.push(btn.to)
+  }
+}
 
 function scrollToId(id) {
   const el = document.getElementById(id)
@@ -343,7 +353,9 @@ async function fetchSiteInfo() {
     if (data && data.value) {
       siteInfo.value = {
         since_year: data.value.since_year,
-        footer_tagline: data.value.footer_tagline
+        footer_tagline: data.value.footer_tagline,
+        footer_copyright: data.value.footer_copyright,
+        footer_developer: data.value.footer_developer
       }
     }
   } catch (err) {

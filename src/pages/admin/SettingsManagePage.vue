@@ -1,5 +1,5 @@
 <template>
-  <q-page class="q-pa-md admin-page">
+  <q-page class="q-pa-md admin-page" style="padding-bottom: 120px">
     <div class="row items-center q-mb-lg">
       <div>
         <div class="text-h5 text-white text-weight-bold">System Settings</div>
@@ -66,6 +66,37 @@
                   v-model="settings.general.footer_tagline" 
                   label="Drawer Tagline" 
                   placeholder="PREMIUM PHOTO EXPERIENCE"
+                  outlined dark color="amber-6" 
+                  class="input-glass" 
+                />
+              </div>
+            </div>
+             <div class="row q-col-gutter-sm">
+              <div class="col-12 col-sm-6">
+                <q-input 
+                  v-model="settings.general.footer_copyright" 
+                  label="Copyright Holder" 
+                  placeholder="Mr. Photo Studio"
+                  outlined dark color="amber-6" 
+                  class="input-glass" 
+                />
+              </div>
+              <div class="col-12 col-sm-6">
+                <q-input 
+                  v-model="settings.general.footer_developer" 
+                  label="Developer Name" 
+                  placeholder="Suraj Dev"
+                  outlined dark color="amber-6" 
+                  class="input-glass" 
+                />
+              </div>
+            </div>
+             <div class="row q-col-gutter-sm">
+              <div class="col-12">
+                <q-input 
+                  v-model="settings.general.footer_developer_link" 
+                  label="Developer Website / Profile Link" 
+                  placeholder="https://surajdev.com"
                   outlined dark color="amber-6" 
                   class="input-glass" 
                 />
@@ -279,7 +310,7 @@ const loading = ref(true)
 const saving = ref(false)
 
 const settings = ref({
-  general: { site_name: '', contact_email: '', phone: '', since_year: 'SINCE 2014', footer_tagline: 'PREMIUM PHOTO EXPERIENCE' },
+  general: { site_name: '', contact_email: '', phone: '', since_year: 'SINCE 2014', footer_tagline: 'PREMIUM PHOTO EXPERIENCE', footer_copyright: 'Mr. Photo Studio', footer_developer: 'Suraj Dev', footer_developer_link: '' },
   delivery: { base_price: 0, notice: '' },
   appearance: { theme: 'dark', primary_color: '#FFC107' },
   maintenance: { enabled: false, message: '' },

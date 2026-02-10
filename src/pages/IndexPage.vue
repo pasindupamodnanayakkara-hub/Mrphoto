@@ -242,11 +242,28 @@
       </div>
 
       <!-- Infinite Scrolling Marquee for Happy Moments -->
-        <div class="marquee-wrapper q-mt-xl" v-if="happyMoments.length > 0">
-          <div class="marquee-content shadow-24">
-            <!-- Double the content for seamless loop -->
-            <div v-for="i in 2" :key="i" class="marquee-group">
-              <div v-for="moment in happyMoments" :key="moment.id + '-' + i" class="review-premium-card" style="zoom: 0.85;">
+        <div 
+          class="marquee-wrapper q-mt-xl" 
+          v-if="happyMoments.length > 0"
+          ref="marqueeContainer"
+          @mousedown="startDrag"
+          @mousemove="onDrag"
+          @mouseup="stopDrag"
+          @mouseleave="stopDrag"
+          @touchstart="pauseScroll"
+          @touchend="resumeScroll"
+        >
+          <div class="marquee-content" :class="{ 'marquee-hovered': isHovered }">
+            <!-- Render enough copies to fill screen and scroll smoothly -->
+            <div v-for="i in 3" :key="i" class="marquee-group">
+              <div 
+                v-for="moment in happyMoments" 
+                :key="moment.id + '-' + i" 
+                class="review-premium-card" 
+                style="zoom: 0.85;"
+                @mouseenter="isHovered = true"
+                @mouseleave="isHovered = false"
+              >
                 <!-- Gallery Image Focus -->
                 <div class="moment-image-container">
                   <q-img :src="moment.image_url" :ratio="1" class="moment-img" />
@@ -266,12 +283,12 @@
                       <div class="badge-mini gold">
                         <q-icon name="frame_inspect" size="12px" color="amber-3" />
                         <span>Type</span>
-                        <div class="badge-val">{{ moment.frame_type || 'Custom' }}</div>
+                        <div class="badge-val text-uppercase">{{ moment.frame_type || 'Custom' }}</div>
                       </div>
                       <div class="badge-mini blue">
                         <q-icon name="photo_size_select_large" size="12px" color="blue-3" />
                         <span>Size</span>
-                        <div class="badge-val">{{ moment.frame_size || 'Standard' }}</div>
+                        <div class="badge-val text-uppercase">{{ moment.frame_size || 'Std' }}</div>
                       </div>
                     </div>
 
@@ -527,10 +544,26 @@
           <!-- Copyright & Credits (Center) -->
           <div class="col-12 col-md-4 text-center">
             <p class="text-grey-6 text-caption q-mb-xs font-roboto leading-normal">
-              &copy; {{ new Date().getFullYear() }} <span class="text-white text-weight-medium">Mr. Photo Studio</span>. 
+              &copy; {{ new Date().getFullYear() }} <span class="text-white text-weight-medium">{{ siteInfo.footer_copyright || 'Mr. Photo Studio' }}</span>. 
             </p>
             <p class="text-grey-7 text-caption q-mb-none font-roboto italic">
-              Developed by <span class="text-amber-gold text-weight-bold cursor-pointer hover-white transition-all">Suraj Dev</span>
+              Developed by 
+              <a 
+                :href="siteInfo.footer_developer_link || '#'" 
+                target="_blank" 
+                class="text-amber-gold text-weight-bold cursor-pointer hover-white transition-all scale-hover inline-block"
+                style="text-decoration: none;"
+                :class="{ 'disabled-link': !siteInfo.footer_developer_link }"
+                v-if="siteInfo.footer_developer_link"
+              >
+                {{ siteInfo.footer_developer || 'Suraj Dev' }}
+              </a>
+              <span 
+                v-else
+                class="text-amber-gold text-weight-bold cursor-pointer hover-white transition-all"
+              >
+                {{ siteInfo.footer_developer || 'Suraj Dev' }}
+              </span>
             </p>
             <!-- Live Version Info -->
 
@@ -553,7 +586,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { supabase } from 'boot/supabase'
@@ -585,6 +618,14 @@ const socialLinks = ref({
   tiktok: '',
   inquiry_number: '' // New field for service inquiries
 })
+
+const siteInfo = ref({
+  since_year: 'SINCE 2014',
+  footer_tagline: 'PREMIUM PHOTO EXPERIENCE',
+  footer_copyright: 'Mr. Photo Studio',
+  footer_developer: 'Suraj Dev',
+  footer_developer_link: ''
+})
 const businessStats = ref({
   stat1: { label: 'Daily Projects', value: '100+', icon: 'collections' },
   stat2: { label: 'Experience', value: '10y', icon: 'history_edu' },
@@ -602,6 +643,85 @@ const newReview = ref({
 
 const selectedService = ref(null)
 const showServiceDialog = ref(false)
+
+// Marquee Refs & Logic
+const marqueeContainer = ref(null)
+const isPaused = ref(false)
+const isHovered = ref(false)
+let animationFrame = null
+let scrollPos = 0
+const scrollSpeed = 0.5 // Adjust for smoothness
+
+function startScroll() {
+  if (animationFrame) cancelAnimationFrame(animationFrame)
+  
+  const animate = () => {
+    if (!marqueeContainer.value) return
+    
+    if (!isPaused.value) {
+      scrollPos += scrollSpeed
+      const container = marqueeContainer.value
+      const contentWidth = container.scrollWidth / 3 // Assuming 3 duplicates
+      
+      if (scrollPos >= contentWidth) {
+        scrollPos = scrollPos % contentWidth // Reset seamlessly preserving offset
+        container.scrollLeft = scrollPos
+      } else {
+        container.scrollLeft = scrollPos
+      }
+    }
+    
+    animationFrame = requestAnimationFrame(animate)
+  }
+  
+  animate()
+}
+
+// Drag Logic
+let isDragging = false
+let startX = 0
+let scrollLeftStart = 0
+
+function startDrag(e) {
+  isDragging = true
+  isPaused.value = true
+  startX = e.pageX - marqueeContainer.value.offsetLeft
+  scrollLeftStart = marqueeContainer.value.scrollLeft
+  marqueeContainer.value.style.cursor = 'grabbing'
+}
+
+function onDrag(e) {
+  if (!isDragging) return
+  e.preventDefault()
+  const x = e.pageX - marqueeContainer.value.offsetLeft
+  const walk = (x - startX) * 1 // Natural 1:1 scroll
+  marqueeContainer.value.scrollLeft = scrollLeftStart - walk
+  scrollPos = marqueeContainer.value.scrollLeft
+}
+
+function stopDrag() {
+  isDragging = false
+  isPaused.value = false
+  if (marqueeContainer.value) {
+    marqueeContainer.value.style.cursor = 'grab'
+    scrollPos = marqueeContainer.value.scrollLeft
+  }
+}
+
+function pauseScroll() {
+  isPaused.value = true
+}
+
+function resumeScroll() {
+  isPaused.value = false
+  if (marqueeContainer.value) {
+    scrollPos = marqueeContainer.value.scrollLeft
+  }
+}
+
+onUnmounted(() => {
+  if (animationFrame) cancelAnimationFrame(animationFrame)
+})
 
 function viewServiceDetails(service) {
   selectedService.value = service
@@ -658,6 +778,26 @@ async function fetchSocialLinks() {
     }
   } catch (err) {
     console.error('Error fetching social links:', err)
+  }
+}
+
+async function fetchSiteInfo() {
+  try {
+    const { data } = await supabase
+      .from('site_settings')
+      .select('value')
+      .eq('key', 'general')
+      .maybeSingle()
+    
+    if (data && data.value) {
+      siteInfo.value = {
+         ...siteInfo.value,
+        ...data.value,
+        footer_developer_link: data.value.footer_developer_link || '' 
+      }
+    }
+  } catch (err) {
+    console.error('Error fetching site info:', err)
   }
 }
 
@@ -780,6 +920,10 @@ async function fetchHappyMoments() {
       // Shuffle and pick 5 random images
       const shuffled = [...data].sort(() => 0.5 - Math.random())
       happyMoments.value = shuffled.slice(0, 5)
+      
+      nextTick(() => {
+        startScroll()
+      })
     } else {
       // Dummy Happy Moments for UI Demo
       happyMoments.value = [
@@ -788,6 +932,9 @@ async function fetchHappyMoments() {
         { id: 3, image_url: 'https://cdn.quasar.dev/img/mountains.jpg', caption: 'Travel Memory', frame_type: 'Canvas', frame_size: 'Large', created_at: new Date().toISOString() },
         { id: 4, image_url: 'https://cdn.quasar.dev/img/quasar.jpg', caption: 'Graduation Day', frame_type: 'Glass', frame_size: 'A3', created_at: new Date().toISOString() }
       ]
+      nextTick(() => {
+        startScroll()
+      })
     }
   } catch (err) {
     console.error('Error fetching happy moments:', err)
@@ -895,6 +1042,7 @@ onMounted(() => {
   fetchPublicReviews()
   fetchHappyMoments()
   fetchSocialLinks()
+  fetchSiteInfo()
   fetchLatestCommit()
   checkUser()
   
@@ -1675,54 +1823,63 @@ onMounted(() => {
 // Infinite Marquee Styles
 .marquee-wrapper {
   width: 100%;
-  overflow: hidden;
-  padding: 80px 0; /* More space for fade */
+  overflow-x: auto; /* Allow manual scroll */
+  overflow-y: hidden;
+  padding: 80px 0;
   position: relative;
   background: black;
+  cursor: grab;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
   
-  /* Mask image for soft edges (Top/Bottom and Left/Right) */
-  mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent),
-              linear-gradient(to right, transparent, black 15%, black 85%, transparent);
-  mask-composite: intersect;
-  -webkit-mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent),
-                      linear-gradient(to right, transparent, black 15%, black 85%, transparent);
-  -webkit-mask-composite: source-in;
+  &::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+  }
+  
+  /* Mask image for soft edges */
+  mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+  
+  &:active {
+    cursor: grabbing;
+  }
 }
 
 .marquee-content {
   display: flex;
   width: max-content;
+  align-items: center;
+  /* Hover effect on wrapper to dim others */
+  transition: all 0.5s ease;
+  
+  &.marquee-hovered .review-premium-card:not(:hover) {
+    opacity: 0.3;
+    filter: blur(3px) grayscale(0.8);
+    transform: scale(0.95);
+  }
 }
 
 .marquee-group {
   display: flex;
-  gap: 30px; // Space between cards
-  padding-right: 30px; // Prevent overlap after loop
-  animation: scroll-marquee 40s linear infinite;
+  gap: 30px;
+  padding-right: 30px;
 }
 
-.marquee-wrapper:hover .marquee-group {
-  animation-play-state: paused;
-}
-
-@keyframes scroll-marquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-100%); }
-}
+/* Removed @keyframes scroll-marquee */
 
 .review-premium-card {
   width: 380px;
   flex-shrink: 0;
   margin: 0;
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255, 255, 255, 0.03);
   backdrop-filter: blur(25px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 32px; // Unified rounded corners
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px; /* Slightly refined */
   transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
   cursor: pointer;
   position: relative;
   z-index: 1;
-  overflow: hidden; // Ensures top corners of image are clipped
+  overflow: hidden;
   
   // Liquid Glass Shine Effect
   &::before {
@@ -1734,8 +1891,8 @@ onMounted(() => {
     height: 200%;
     background: radial-gradient(
       circle,
-      rgba(255, 255, 255, 0.08) 0%,
-      transparent 50%
+      rgba(212, 175, 55, 0.1) 0%,
+      transparent 60%
     );
     opacity: 0;
     transition: opacity 0.5s ease;
@@ -1744,12 +1901,12 @@ onMounted(() => {
   }
 
   &:hover {
-    transform: translateY(-15px) scale(1.02);
-    z-index: 10;
-    border-color: rgba(212, 175, 55, 0.4);
-    background: rgba(255, 255, 255, 0.06);
-    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), 
-                0 0 20px rgba(212, 175, 55, 0.1);
+    transform: translateY(-15px) scale(1.05);
+    z-index: 100; /* Pop out */
+    border-color: rgba(212, 175, 55, 0.6);
+    background: rgba(20, 20, 20, 0.9);
+    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.8), 
+                0 0 30px rgba(212, 175, 55, 0.15);
     
     &::before {
       opacity: 1;
@@ -1757,7 +1914,7 @@ onMounted(() => {
     }
 
     .moment-img {
-      transform: scale(1.1);
+      transform: scale(1.15);
     }
   }
 }
@@ -1765,11 +1922,10 @@ onMounted(() => {
 .badge-mini {
   display: inline-flex;
   align-items: center;
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 10px;
+  padding: 6px 12px;
+  border-radius: 12px; /* Matched to card radius style */
+  font-size: 11px;
   font-weight: bold;
-  text-transform: uppercase;
   letter-spacing: 0.5px;
   
   span {
@@ -1778,22 +1934,21 @@ onMounted(() => {
   }
   
   &.gold {
-    background: rgba(212, 175, 55, 0.1);
+    background: rgba(212, 175, 55, 0.08);
     color: #D4AF37;
-    border: 0.5px solid rgba(212, 175, 55, 0.2);
+    border: 1px solid rgba(212, 175, 55, 0.25);
   }
   &.blue {
-    background: rgba(33, 150, 243, 0.1);
+    background: rgba(33, 150, 243, 0.08);
     color: #2196F3;
-    border: 0.5px solid rgba(33, 150, 243, 0.2);
+    border: 1px solid rgba(33, 150, 243, 0.25);
   }
   
   .badge-val {
-    background: white;
-    color: black;
-    padding: 2px 6px;
-    border-radius: 10px;
-    font-size: 11px;
+    color: white;
+    margin-left: 8px;
+    font-weight: normal;
+    opacity: 0.9;
   }
 }
 
@@ -1801,7 +1956,7 @@ onMounted(() => {
   background: rgba(33, 150, 243, 0.05);
   border: 1px solid rgba(33, 150, 243, 0.1);
   border-radius: 16px;
-  padding: 12px 20px;
+  padding: 10px 20px;
   text-align: center;
 }
 
@@ -1822,8 +1977,9 @@ onMounted(() => {
 .moment-image-container {
   width: 100%;
   height: 250px;
-  overflow: hidden; // Critical for top rounded corners
+  overflow: hidden;
   position: relative;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   
   .moment-img {
     transition: transform 0.8s cubic-bezier(0.165, 0.84, 0.44, 1);
@@ -1836,10 +1992,6 @@ onMounted(() => {
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(to bottom, transparent 60%, rgba(10, 10, 10, 0.8));
-}
-
-.review-premium-card:hover .moment-img {
-  transform: scale(1.1);
+  background: linear-gradient(to bottom, transparent 50%, rgba(10, 10, 10, 0.9));
 }
 </style>

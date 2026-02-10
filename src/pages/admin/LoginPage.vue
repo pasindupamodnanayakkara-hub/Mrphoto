@@ -106,13 +106,13 @@ async function onSubmit() {
       // We still proceed as customer if profile fetch fails
     }
 
-    $q.notify({
-      type: 'positive',
-      message: 'Login successful!'
-    })
-    
     const role = profile?.role || 'customer'
     console.log('User role identified as:', role)
+    
+    $q.notify({
+      type: 'positive',
+      message: `Login successful! Welcome ${role === 'admin' ? 'Admin' : ''}`
+    })
     
     // Redirect based on role
     if (role === 'customer') {

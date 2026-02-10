@@ -86,6 +86,7 @@
               <q-btn
                 flat
                 label="Logout"
+                type="button"
                 color="red-5"
                 class="full-width q-mt-sm"
                 @click="handleLogout"
