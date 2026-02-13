@@ -8,47 +8,45 @@
           <q-card class="glass-card q-pa-lg">
             <div class="text-h5 text-weight-bold q-mb-md">Delivery Details</div>
             
+            <!-- Address Selection -->
+            <div class="q-mb-lg">
+               <div class="text-subtitle2 text-grey-5 q-mb-sm">Select Address</div>
+               
+               <div v-if="addressesLoading" class="flex flex-center q-pa-md">
+                 <q-spinner-dots color="amber-6" size="20px" />
+               </div>
+
+               <div v-if="!addressesLoading && addresses.length > 0" class="row q-col-gutter-sm">
+                 <div class="col-12" v-for="addr in addresses" :key="addr.id">
+                   <q-card 
+                    class="cursor-pointer address-card q-pa-md" 
+                    :class="{ 'selected-address': selectedAddressId === addr.id }"
+                    @click="selectAddress(addr)"
+                    flat bordered
+                   >
+                     <div class="row items-center justify-between">
+                       <div class="text-weight-bold">{{ addr.contact_name }}</div>
+                       <q-icon v-if="selectedAddressId === addr.id" name="check_circle" color="amber-6" />
+                     </div>
+                     <div class="text-caption text-grey-4">{{ addr.mobile_number }}</div>
+                     <div class="text-caption text-grey-5">{{ addr.street_address }}<span v-if="addr.apartment">, {{ addr.apartment }}</span></div>
+                     <div class="text-caption text-grey-5">{{ addr.city }}, {{ addr.zip_code }}</div>
+                   </q-card>
+                 </div>
+               </div>
+
+                <q-btn 
+                  outline 
+                  icon="add" 
+                  label="Add New Address" 
+                  color="amber-6" 
+                  class="full-width q-mt-md"
+                  rounded
+                  @click="openAddressDialog"
+                />
+            </div>
+
             <q-form @submit="processCheckout" class="q-gutter-y-md">
-              <q-input
-                v-model="orderForm.name"
-                label="Full Name"
-                dark outlined color="amber-6"
-                class="input-glass"
-                :rules="[val => !!val || 'Name is required']"
-              />
-              
-              <div class="row q-col-gutter-md">
-                <div class="col-6">
-                  <q-input
-                    v-model="orderForm.phone1"
-                    label="Primary Phone"
-                    dark outlined color="amber-6"
-                    class="input-glass"
-                    mask="###########"
-                    hint="Example: 0771234567"
-                    :rules="[val => !!val || 'Primary phone is required']"
-                  />
-                </div>
-                <div class="col-6">
-                  <q-input
-                    v-model="orderForm.phone2"
-                    label="Secondary Phone (Optional)"
-                    dark outlined color="amber-6"
-                    class="input-glass"
-                    mask="###########"
-                  />
-                </div>
-              </div>
-
-              <q-input
-                v-model="orderForm.address"
-                label="Delivery Address"
-                dark outlined color="amber-6"
-                type="textarea"
-                class="input-glass"
-                :rules="[val => !!val || 'Address is required']"
-              />
-
               <q-input
                 v-model="orderForm.notes"
                 label="Special Notes / Instructions"
@@ -58,42 +56,7 @@
                 hint="Preferred delivery time, landmarks, etc."
               />
 
-              <div class="bg-grey-10 q-pa-md rounded-borders border-glass q-mt-md">
-                <div class="text-subtitle2 text-grey-5 q-mb-sm">Promo Code</div>
-                <div class="row q-col-gutter-sm">
-                  <div class="col">
-                    <q-input
-                      v-model="promoInput"
-                      label="Enter Promo Code"
-                      dark dense outlined color="amber-6"
-                      class="input-glass"
-                      :disable="!!appliedPromo"
-                    />
-                  </div>
-                  <div class="col-auto">
-                    <q-btn 
-                      v-if="!appliedPromo"
-                      label="Apply" 
-                      color="amber-6" 
-                      text-color="black" 
-                      unelevated 
-                      @click="applyPromo"
-                      :loading="promoLoading"
-                    />
-                    <q-btn 
-                      v-else
-                      label="Remove" 
-                      color="red-5" 
-                      flat 
-                      @click="removePromo"
-                    />
-                  </div>
-                </div>
-                <div v-if="appliedPromo" class="text-caption text-green-5 q-mt-xs">
-                  Promo '{{ appliedPromo.code }}' applied: 
-                  {{ appliedPromo.discount_type === 'percentage' ? appliedPromo.discount_value + '%' : 'LKR ' + appliedPromo.discount_value }} off
-                </div>
-              </div>
+
               
               <q-separator dark class="q-my-lg" />
               
@@ -111,7 +74,7 @@
                 unelevated
                 lazy-rules
                 :loading="submitting"
-                :disable="cartStore.items.length === 0"
+                :disable="cartStore.items.length === 0 || !selectedAddressId"
               />
             </q-form>
           </q-card>
@@ -153,6 +116,44 @@
                     </q-item-section>
                   </q-item>
                 </q-list>
+              </div>
+            </div>
+
+            <!-- Promo Code Section -->
+            <div class="bg-grey-10 q-pa-md rounded-borders border-glass q-mt-md">
+              <div class="text-subtitle2 text-grey-5 q-mb-sm">Promo Code</div>
+              <div class="row q-col-gutter-sm">
+                <div class="col">
+                  <q-input
+                    v-model="promoInput"
+                    label="Enter Promo Code"
+                    dark dense outlined color="amber-6"
+                    class="input-glass"
+                    :disable="!!appliedPromo"
+                  />
+                </div>
+                <div class="col-auto">
+                  <q-btn 
+                    v-if="!appliedPromo"
+                    label="Apply" 
+                    color="amber-6" 
+                    text-color="black" 
+                    unelevated 
+                    @click="applyPromo"
+                    :loading="promoLoading"
+                  />
+                  <q-btn 
+                    v-else
+                    label="Remove" 
+                    color="red-5" 
+                    flat 
+                    @click="removePromo"
+                  />
+                </div>
+              </div>
+              <div v-if="appliedPromo" class="text-caption text-green-5 q-mt-xs">
+                Promo '{{ appliedPromo.code }}' applied: 
+                {{ appliedPromo.discount_type === 'percentage' ? appliedPromo.discount_value + '%' : 'LKR ' + appliedPromo.discount_value }} off
               </div>
             </div>
 
@@ -199,7 +200,6 @@
         <div class="text-h5 text-white text-weight-bold">Order Placed!</div>
         <div class="text-grey-5 q-my-md">
           Thank you for choosing Mr. Photo. Your order has been received. 
-          We will call you soon on <b>{{ orderForm.phone1 }}</b> for verification.
         </div>
         <q-btn 
           label="Track My Order" 
@@ -213,6 +213,13 @@
       </q-card>
     </q-dialog>
 
+    <q-dialog v-model="showAddressDialog">
+      <AddressForm 
+        :loading="addressSubmitting"
+        @save="handleAddressSave" 
+      />
+    </q-dialog>
+
   </q-page>
 </template>
 
@@ -222,6 +229,7 @@ import { useCartStore } from 'stores/cart'
 import { supabase } from 'boot/supabase'
 import { useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
+import AddressForm from 'components/AddressForm.vue'
 
 const cartStore = useCartStore()
 const $q = useQuasar()
@@ -232,12 +240,17 @@ const successDialog = ref(false)
 const orderId = ref(null)
 
 const orderForm = ref({
-  name: '',
-  phone1: '',
-  phone2: '',
-  address: '',
   notes: ''
 })
+
+// Address Logic
+const addresses = ref([])
+const addressesLoading = ref(false)
+const selectedAddressId = ref(null)
+const selectedAddressObj = computed(() => addresses.value.find(a => a.id === selectedAddressId.value))
+
+const showAddressDialog = ref(false)
+const addressSubmitting = ref(false)
 
 // Promo Code Logic
 const promoInput = ref('')
@@ -246,11 +259,13 @@ const promoLoading = ref(false)
 
 const discountAmount = computed(() => {
   if (!appliedPromo.value) return 0
-  const subtotal = cartStore.cartTotal
+  const subtotal = parseFloat(cartStore.cartTotal) || 0
+  const discountValue = parseFloat(appliedPromo.value.discount_value) || 0
+  
   if (appliedPromo.value.discount_type === 'percentage') {
-    return (subtotal * appliedPromo.value.discount_value) / 100
+    return (subtotal * discountValue) / 100
   } else {
-    return appliedPromo.value.discount_value
+    return discountValue
   }
 })
 
@@ -262,7 +277,11 @@ const selectedExtrasTotal = computed(() => {
 })
 
 const netTotal = computed(() => {
-  return (cartStore.cartTotal + selectedExtrasTotal.value) - discountAmount.value
+  const subtotal = parseFloat(cartStore.cartTotal) || 0
+  const extras = selectedExtrasTotal.value || 0
+  const discount = discountAmount.value || 0
+  const total = (subtotal + extras) - discount
+  return Math.max(0, total).toFixed(2) // Ensure positive and formatted
 })
 
 async function fetchExtras() {
@@ -276,6 +295,81 @@ async function fetchExtras() {
     availableExtras.value = data || []
   } catch (err) {
     console.error('Error fetching extras:', err)
+  }
+}
+
+async function fetchAddresses() {
+  addressesLoading.value = true
+  try {
+     const { data: { user } } = await supabase.auth.getUser()
+     if (!user) return
+
+     const { data, error } = await supabase
+      .from('shipping_addresses')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('is_default', { ascending: false })
+      .order('created_at', { ascending: false })
+    
+    if (error) throw error
+    addresses.value = data || []
+    
+    // Auto select default
+    const defaultAddr = data.find(a => a.is_default)
+    if (defaultAddr) {
+      selectedAddressId.value = defaultAddr.id
+    } else if (data.length > 0) {
+      selectedAddressId.value = data[0].id
+    }
+
+  } catch (err) {
+    console.error('Error fetching addresses:', err)
+  } finally {
+    addressesLoading.value = false
+  }
+}
+
+function selectAddress(addr) {
+  selectedAddressId.value = addr.id
+}
+
+function openAddressDialog() {
+  showAddressDialog.value = true
+}
+
+async function handleAddressSave(formData) {
+  addressSubmitting.value = true
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+
+    // If setting as default, unset others first
+    if (formData.is_default) {
+      await supabase
+        .from('shipping_addresses')
+        .update({ is_default: false })
+        .eq('user_id', user.id)
+    }
+    
+    // Always insert in checkout
+    const { error: insertError } = await supabase
+        .from('shipping_addresses')
+        .insert([{
+          ...formData,
+          user_id: user.id
+        }])
+    
+    if (insertError) throw insertError
+    
+    $q.notify({ type: 'positive', message: 'Address added!' })
+    showAddressDialog.value = false
+    await fetchAddresses() // Refresh list
+
+  } catch (err) {
+    console.error(err)
+    $q.notify({ type: 'negative', message: 'Failed to add address' })
+  } finally {
+    addressSubmitting.value = false
   }
 }
 
@@ -295,6 +389,14 @@ async function applyPromo() {
     
     if (!data) {
       $q.notify({ type: 'negative', message: 'Invalid or expired promo code' })
+      return
+    }
+
+    const usageLimit = parseInt(data.usage_limit) || 0
+    const usedCount = parseInt(data.used_count) || 0
+    
+    if (usageLimit > 0 && usedCount >= usageLimit) {
+      $q.notify({ type: 'negative', message: 'This promo code usage limit has been reached.' })
       return
     }
 
@@ -322,6 +424,10 @@ function removePromo() {
 
 async function processCheckout() {
   if (cartStore.items.length === 0) return
+  if (!selectedAddressObj.value) {
+    $q.notify({ type: 'warning', message: 'Please select a delivery address' })
+    return
+  }
 
   submitting.value = true
   try {
@@ -332,15 +438,18 @@ async function processCheckout() {
       return
     }
 
+    const addr = selectedAddressObj.value
+    const formattedAddress = `${addr.street_address}${addr.apartment ? ', ' + addr.apartment : ''}, ${addr.city}, ${addr.district}, ${addr.province}, ${addr.country}, ${addr.zip_code}`
+
     // 1. Create the order
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .insert([{
         customer_id: user.id,
-        name: orderForm.value.name,
-        phone1: orderForm.value.phone1,
-        phone2: orderForm.value.phone2,
-        address: orderForm.value.address,
+        name: addr.contact_name,
+        phone1: addr.mobile_number,
+        phone2: null, // Removed separate phone2 field requirement
+        address: formattedAddress, // Storing formatted address string
         notes: orderForm.value.notes,
         promo_code_id: appliedPromo.value?.id || null,
         total_amount: cartStore.cartTotal + selectedExtrasTotal.value,
@@ -369,6 +478,22 @@ async function processCheckout() {
 
     if (itemsError) throw itemsError
 
+    // 3. Update promo usage count
+    if (appliedPromo.value?.id) {
+      const { data: currentPromo, error: promoFetchError } = await supabase
+        .from('promo_codes')
+        .select('used_count')
+        .eq('id', appliedPromo.value.id)
+        .single()
+      
+      if (!promoFetchError && currentPromo) {
+        await supabase
+          .from('promo_codes')
+          .update({ used_count: (currentPromo.used_count || 0) + 1 })
+          .eq('id', appliedPromo.value.id)
+      }
+    }
+
     // Success!
     cartStore.clearCart()
     successDialog.value = true
@@ -386,21 +511,7 @@ function goToTracking() {
 
 onMounted(async () => {
   fetchExtras()
-  // Pre-fill user details if logged in
-  const { data: { user } } = await supabase.auth.getUser()
-  if (user) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('full_name, phone, address')
-      .eq('id', user.id)
-      .maybeSingle()
-    
-    if (profile) {
-      if (profile.full_name) orderForm.value.name = profile.full_name
-      if (profile.phone) orderForm.value.phone1 = profile.phone
-      if (profile.address) orderForm.value.address = profile.address
-    }
-  }
+  fetchAddresses()
 })
 </script>
 
@@ -423,5 +534,20 @@ onMounted(async () => {
 
 .border-glass {
   border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.address-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+  
+  &:hover {
+    border-color: rgba(255, 193, 7, 0.5);
+  }
+  
+  &.selected-address {
+    border-color: #ffc107;
+    background: rgba(255, 193, 7, 0.1);
+  }
 }
 </style>

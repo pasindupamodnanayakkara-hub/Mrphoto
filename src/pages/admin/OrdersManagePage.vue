@@ -200,7 +200,12 @@
                <span>LKR {{ currentOrder.total_amount }}</span>
              </div>
              <div v-if="currentOrder.discount_amount > 0" class="row justify-between text-green-5">
-               <span>Promo Discount:</span>
+               <span>
+                 Promo Discount 
+                 <span v-if="currentOrder.promo_codes" class="text-white text-weight-bold text-uppercase">
+                   ({{ currentOrder.promo_codes.code }})
+                 </span>:
+               </span>
                <span>- LKR {{ currentOrder.discount_amount }}</span>
              </div>
              <div class="row justify-between text-h6 text-weight-bold text-white">
@@ -279,6 +284,7 @@ async function fetchOrders() {
       .from('orders')
       .select(`
         *,
+        promo_codes (*),
         order_items (
           *,
           products (*)

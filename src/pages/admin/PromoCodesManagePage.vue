@@ -86,21 +86,36 @@
             mask="XXXXXXXXXXXX"
           />
           
-          <q-select
-            v-model="currentPromo.discount_type"
-            :options="['percentage', 'fixed']"
-            label="Discount Type"
-            outlined dark color="amber-6"
-            class="input-glass"
-          />
+          <div class="q-mb-sm">
+            <div class="text-caption text-grey-5 q-mb-xs">Discount Type</div>
+            <q-btn-toggle
+              v-model="currentPromo.discount_type"
+              no-caps
+              rounded
+              unelevated
+              toggle-color="amber-6"
+              color="grey-9"
+              text-color="white"
+              toggle-text-color="black"
+              :options="[
+                { label: 'Percentage (%)', value: 'percentage', icon: 'percent' },
+                { label: 'Fixed Amount (LKR)', value: 'fixed', icon: 'attach_money' }
+              ]"
+            />
+          </div>
 
           <q-input 
             v-model.number="currentPromo.discount_value" 
-            label="Value" 
+            :label="currentPromo.discount_type === 'percentage' ? 'Percentage (%)' : 'Amount (LKR)'"
             type="number"
             outlined dark color="amber-6" 
             class="input-glass" 
-            :hint="currentPromo.discount_type === 'percentage' ? 'Percentage (e.g. 10 for 10%)' : 'Fixed Amount (LKR)'"
+            :hint="currentPromo.discount_type === 'percentage' ? 'Percentage (e.g. 10 to 100)' : 'Fixed Amount (LKR)'"
+            :rules="[
+              val => val > 0 || 'Value must be positive',
+              val => (currentPromo.discount_type !== 'percentage' || val <= 100) || 'Percentage cannot exceed 100%'
+            ]"
+            @update:model-value="validateDiscountValue"
           />
 
           <q-input 
@@ -129,11 +144,12 @@
         <q-card-actions align="right" class="q-pa-md">
           <q-btn flat label="Cancel" color="grey" v-close-popup />
           <q-btn 
-            class="btn-premium-save" 
-            icon="auto_awesome"
-            label="Save Promo Code" 
+            label="Save" 
+            color="amber-6"
+            text-color="black"
             @click="savePromo" 
             :loading="saving" 
+            unelevated
           />
         </q-card-actions>
       </q-card>
@@ -213,8 +229,29 @@ function openEditDialog(promo) {
   showDialog.value = true
 }
 
+function validateDiscountValue(val) {
+  if (currentPromo.value.discount_type === 'percentage' && val > 100) {
+    currentPromo.value.discount_value = 100
+  }
+}
+
 async function savePromo() {
-  if (!currentPromo.value.code) return
+  if (!currentPromo.value.code) {
+    $q.notify({ type: 'warning', message: 'Promo code is required' })
+    return
+  }
+
+  // Strict Validation
+  if (currentPromo.value.discount_value <= 0) {
+    $q.notify({ type: 'warning', message: 'Discount value must be positive' })
+    return
+  }
+
+  if (currentPromo.value.discount_type === 'percentage' && currentPromo.value.discount_value > 100) {
+    $q.notify({ type: 'warning', message: 'Percentage discount cannot exceed 100%' })
+    return
+  }
+
   saving.value = true
   try {
     const { id, ...cleanData } = currentPromo.value
