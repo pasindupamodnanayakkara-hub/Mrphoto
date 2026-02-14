@@ -21,7 +21,7 @@
         <div class="row items-center" v-if="!isScrolled">
           <!-- Logo Area -->
           <q-avatar size="36px" class="transition-all cursor-pointer q-mr-md">
-            <img src="~assets/logo.png" />
+            <img src="~assets/logo.webp" />
           </q-avatar>
           
           <div 
@@ -200,7 +200,7 @@
         <!-- Mobile Logo & Brand -->
         <div class="column items-center q-mb-xl q-mt-md">
           <q-avatar size="70px" class="q-mb-md logo-pop border-gold-subtle">
-            <img src="/services/logo.png" />
+            <img src="/services/logo.webp" />
           </q-avatar>
           <div class="text-h5 text-weight-bold logo-chrome-text text-uppercase letter-spacing-lg">Mr. Photo</div>
           <div class="text-caption text-grey-5 text-uppercase letter-spacing-md">Premium Studio</div>

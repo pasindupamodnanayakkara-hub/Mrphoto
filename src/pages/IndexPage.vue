@@ -4,7 +4,7 @@
     <!-- Hero Section -->
     <div class="hero-section relative-position flex flex-center overflow-hidden">
       <q-img
-        src="~assets/hero_studio.png"
+        src="~assets/hero_studio.webp"
         class="absolute-full hero-bg"
         fit="cover"
         style="opacity: 0.6"
@@ -17,7 +17,7 @@
       <div class="hero-content column flex-center relative-position q-pa-md text-center q-mt-xl q-pt-xl" data-aos="fade-up" style="zoom: 0.85;">
         <!-- Sample Logo Placeholder -->
         <q-img
-          src="/services/logo.png"
+          src="/services/logo.webp"
           width="120px"
           class="q-mb-md logo-pop mobile-logo-hero"
         />
@@ -533,7 +533,7 @@
           <!-- Brand & Logo (Left) -->
           <div class="col-12 col-md-4 text-center text-md-left row items-center justify-center justify-md-start">
             <q-avatar size="48px" class="q-mr-md logo-pop">
-              <img src="/services/logo.png" />
+              <img src="/services/logo.webp" />
             </q-avatar>
             <div class="column">
               <div class="text-h6 text-weight-bold letter-spacing-lg text-uppercase logo-chrome-text">Mr. Photo</div>
